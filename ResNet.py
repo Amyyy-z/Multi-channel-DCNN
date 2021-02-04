@@ -2,7 +2,6 @@
 # @Author               : Xinyu Zhang (Amy)
 # @Python               : 3.7
 # @Tensorflow Version   : 2.1.0
-# @CuDNN version        : 2
 
 import keras
 from keras import models
