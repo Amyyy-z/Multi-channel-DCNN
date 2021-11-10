@@ -13,7 +13,7 @@ def cv_imread(file_path):
     cv_img = cv2.imdecode(np.fromfile(file_path, dtype = np.uint8), -1)
     return cv_img
 
-# 输出鼠标在图片上点击的坐标
+# locate the mouse
 def on_EVENT_LBUTTONDOWN(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         xy = "%d,%d" % (x, y)
@@ -26,7 +26,7 @@ def on_EVENT_LBUTTONDOWN(event, x, y, flags, param):
         print(x, y)
 
 
-# 获取对话框中的输入值
+# extract the numbers from the window
 def getInput(title, message):
     def return_callback(event):
         print('quit...')
@@ -58,11 +58,11 @@ def getInput(title, message):
     root.destroy()
     return str
 
-# Excel文件的格式
-def set_style(name, height, bold=False):
-    style = xlwt.XFStyle()  # 初始化样式
 
-    font = xlwt.Font()  # 为样式创建字体
+def set_style(name, height, bold=False):
+    style = xlwt.XFStyle()  
+
+    font = xlwt.Font()  
     font.name = name  # 'Times New Roman'
     font.bold = bold
     font.color_index = 4
@@ -72,57 +72,57 @@ def set_style(name, height, bold=False):
 
     return style
 
-# 创建Excel文件
+# create an Excel file
 def create_excel_xls(path, sheet_name, attributes):
-    workbook = xlwt.Workbook(encoding='utf-8')  # 新建一个工作簿
-    sheet = workbook.add_sheet(sheet_name)  # 在工作簿中新建一个表格
+    workbook = xlwt.Workbook(encoding='utf-8')  # create a new workbook
+    sheet = workbook.add_sheet(sheet_name)  # create a new sheet
     for i in range(0, len(attributes)):
         sheet.write(0, i, attributes[i], set_style('Times New Roman', 220, True))
-    workbook.save(path)  # 保存工作簿
+    workbook.save(path)  # save the workbook
 
-# 在现有的Excel文件的最后添加数据
+# add in the values in the excel file
 def write_excel_xls_append(path, value):
-    index = len(value)  # 获取需要写入数据的列数
-    workbook = xlrd.open_workbook(path)  # 打开工作簿
-    sheets = workbook.sheet_names()  # 获取工作簿中的所有表格
-    worksheet = workbook.sheet_by_name(sheets[0])  # 获取工作簿中所有表格中的的第一个表格
-    rows_old = worksheet.nrows  # 获取表格中已存在的数据的行数
-    new_workbook = copy(workbook)  # 将xlrd对象拷贝转化为xlwt对象
-    new_worksheet = new_workbook.get_sheet(0)  # 获取转化后工作簿中的第一个表格
+    index = len(value)  
+    workbook = xlrd.open_workbook(path)  
+    sheets = workbook.sheet_names()  # extract all the sheets from the workbook
+    worksheet = workbook.sheet_by_name(sheets[0])  
+    rows_old = worksheet.nrows  
+    new_workbook = copy(workbook)  # make xlrd copy to xlwt
+    new_worksheet = new_workbook.get_sheet(0)  
     for i in range(0, index):
         new_worksheet.write(rows_old, i, value[i],
-                            set_style('Times New Roman', 220, True))  # 追加写入数据，注意是从1+rows_old行开始写入
-    new_workbook.save(path)  # 保存工作簿
+                            set_style('Times New Roman', 220, True))  
+    new_workbook.save(path)  
 
 
 if __name__ == '__main__':
     width = 1000
     height = 600
 
-    # 需要修改的图片所储存的文件夹路径
+    # save the image path
     input_dir = r'C:\Users\Amy\Desktop\CT\201 - 301'
-    # 修改后的左右图片的保存路径
+    
     output_dir_LR = r'C:\Users\Amy\Desktop\Cropped CT\Left and Right'
-    # 修改后的整体图片保存路径
+   
     output_dir_W = r'C:\Users\Amy\Desktop\Cropped CT\Whole'
 
 
-    if not os.path.exists(output_dir_LR):  # 如果路径不存在
+    if not os.path.exists(output_dir_LR):  
         os.makedirs(output_dir_LR)
 
-    if not os.path.exists(output_dir_W):  # 如果路径不存在
+    if not os.path.exists(output_dir_W):  
         os.makedirs(output_dir_W)
 
-    # Labels的excel文件存储文件夹
+    # the fila path for the labels
     Labels = r'C:\Users\Amy\Desktop\CT Label'
-    # 三个数据库的Label的存储路径
+    
     Leftdata_labels = Labels + r'/Left_labels.xls'
     Rightdata_labels = Labels + r'/Right_labels.xls'
     Fulldata_labels = Labels + r'/Whole_labels.xls'
-    # Label excel文件的column name
+    
     attributes = ['img_path', 'labels']
 
-    # 路径不存在则建立
+    
     if not os.path.exists(Labels):
         os.makedirs(Labels)
 
@@ -135,18 +135,18 @@ if __name__ == '__main__':
     if not os.path.exists(Fulldata_labels):
         create_excel_xls(Fulldata_labels, 'Full_labels', attributes)
 
-    # 读取第一级目录下所有文件名
+    # read all the file names
     all_files = os.listdir(input_dir)
-    # 对每一个二级文件遍历
+    
     for file_idx in range(len(all_files)):
-        # 生成full_path
+        # create new full_path
         # print(type(file))
         print(file_idx)
         file = all_files[file_idx]
         case_path = input_dir + r'/' + file
-        # 判断二级目录是否为文件夹
+        
         if os.path.isdir(case_path):
-            # 读取二级目录下所有文件名
+            
             all_imgs = os.listdir(case_path)
             idx = 1
             for img_name in all_imgs:
@@ -154,7 +154,7 @@ if __name__ == '__main__':
                 if os.path.splitext(img_name)[-1] == '.png':
                     img_path = case_path + r'/' + img_name
 
-                    #################################判断是否需要截图#####################################
+                    #################################whether a screenshot is applicable#####################################
 
 
                     img = cv_imread(str(img_path))
@@ -166,12 +166,12 @@ if __name__ == '__main__':
                     # cv2.waitKey(1)
 
 
-                    if not tkinter.messagebox.askyesno('提示', '是否需要截图'):
+                    if not tkinter.messagebox.askyesno('Hint', 'Whether to screenshot'):
                         pass
-                    else:  # 若需要
-                        ####################################截取左边##########################################
+                    else:  # if yes
+                        ####################################screenshot the left-side##########################################
                         print(str(file_idx) + '_' + file + '_left')
-                        L = [] # 创建用于存储需要写入excel文件的数据的list
+                        L = [] 
 
                         img = cv_imread(str(img_path))
                         a = []
@@ -180,7 +180,7 @@ if __name__ == '__main__':
                         cv2.resizeWindow("image", (width, height))
                         cv2.imshow("image", img)
 
-                        # 读取鼠标在图片上点击的坐标
+                        
                         cv2.setMouseCallback("image", on_EVENT_LBUTTONDOWN)
                         cv2.imshow("image", img)
                         cv2.waitKey(0)
@@ -192,9 +192,9 @@ if __name__ == '__main__':
                             x_end = b[-1]
                             y_start = a[-2]
                             y_end = a[-1]
-                            # 截取从(x_start，y_start)到(x_end,y_end)的图片
+                            # screenshot from (x_start，y_start) to (x_end,y_end)
                             cropImg = img[x_start:x_end, y_start:y_end]
-                            # 以定义的图片名保存到output的文件夹中
+                            
                             file_name = r'CT' + file + r'_L' + str(idx) + '.png'
                             image_path = output_dir_LR + r'\\' + file_name
                             cv2.imwrite(image_path, cropImg)
@@ -202,14 +202,14 @@ if __name__ == '__main__':
                             Left_name = r'CT' + file + r'_L' + str(idx)
 
                             L.append(Left_name)
-                            # 获取该图的label
-                            text = getInput('左侧分类标签', '左侧第几类?')
+                            # extract the label
+                            text = getInput('Left label', 'Which class?')
                             L.append(text)
                             print(L)
-                            # 在label excel文件的最后加入一行新数据
+                            
                             write_excel_xls_append(Leftdata_labels, L)
 
-                        ####################################截取右边##########################################
+                        ####################################Screenshot the right-side##########################################
                         print(str(file_idx) + '_' + file + '_right')
                         L = []
 
@@ -221,7 +221,7 @@ if __name__ == '__main__':
                         cv2.resizeWindow("image", (width, height))
                         cv2.imshow("image", img)
 
-                        # 读取鼠标在图片上点击的坐标
+                        
                         cv2.setMouseCallback("image", on_EVENT_LBUTTONDOWN)
                         cv2.imshow("image", img)
                         cv2.waitKey(0)
@@ -233,19 +233,19 @@ if __name__ == '__main__':
                             x_end = b[-1]
                             y_start = a[-2]
                             y_end = a[-1]
-                            # 截取从(x_start，y_start)到(x_end,y_end)的图片
+                            # Screenshot from (x_start，y_start) to (x_end,y_end)
                             cropImg = img[x_start:x_end, y_start:y_end]
-                            # 以定义的图片名保存到output的文件夹中
+                            
                             file_name = r'CT' + file + r'_R' + str(idx) + '.png'
                             image_path = output_dir_LR + r'\\' + file_name
                             cv2.imwrite(image_path, cropImg)
                             Right_name = r'CT' + file + r'_R' + str(idx)
                             L.append(Right_name)
-                            text = getInput('右侧分类标签', '右侧第几类？')
+                            text = getInput('Right label', 'Which class?')
                             L.append(text)
                             write_excel_xls_append(Rightdata_labels, L)
 
-                        ##################################截取全部##########################################
+                        ##################################Screenshot the whole##########################################
                         print(str(file_idx) + '_' + file + '_full')
                         L = []
 
@@ -257,7 +257,7 @@ if __name__ == '__main__':
                         cv2.resizeWindow("image", (width, height))
                         cv2.imshow("image", img)
 
-                        # 读取鼠标在图片上点击的坐标
+                        
                         cv2.setMouseCallback("image", on_EVENT_LBUTTONDOWN)
                         cv2.imshow("image", img)
                         cv2.waitKey(0)
@@ -269,16 +269,16 @@ if __name__ == '__main__':
                             x_end = b[-1]
                             y_start = a[-2]
                             y_end = a[-1]
-                            # 截取从(x_start，y_start)到(x_end,y_end)的图片
+                            # Screenshot from (x_start，y_start) to (x_end,y_end)
                             cropImg = img[x_start:x_end, y_start:y_end]
-                            # 以定义的图片名保存到output的文件夹中
+                            
                             file_name = r'CT' + file + '_' + str(idx) + '.png'
 
                             image_path = output_dir_W + r'\\' + file_name
                             cv2.imwrite(image_path, cropImg)
                             Full_name = r'CT' + file + r'_' + str(idx)
                             L.append(Full_name)
-                            text = getInput('整体分类标签', '整体第几类？')
+                            text = getInput('Whole label', 'Which class?')
                             L.append(text)
                             write_excel_xls_append(Fulldata_labels, L)
 
