@@ -5,213 +5,11 @@
 # @Contributor for Xception: Arjun Sarkar
 # @Other required models can be viewed through: https://keras.io/api/applications/
 
-import tensorflow as tf
-import tensorflow.keras
 
-from tensorflow.keras import models, layers
-from tensorflow.keras.models import Model, model_from_json, Sequential
-
-from tensorflow.keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
-from tensorflow.keras.callbacks import TensorBoard
-from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D, SeparableConv2D, \
-    UpSampling2D, BatchNormalization, Input, GlobalAveragePooling2D
-
-from tensorflow.keras.regularizers import l2
-from tensorflow.keras.optimizers import SGD, RMSprop
-from tensorflow.keras.utils import to_categorical
-from keras.utils.vis_utils import plot_model
-
-import keras
-from keras import models
-from keras import layers
-from keras.layers.core import Permute
-import tensorflow as tf
-import tensorflow.compat.v1 as tf
-
-tf.disable_v2_behavior()
-tf.enable_eager_execution()
-
-import tensorflow as tf
-import timeit
-
-with tf.device('/cpu:0'):
-    cpu_a = tf.random.normal([10000, 1000])
-    cpu_b = tf.random.normal([1000, 2000])
-    print(cpu_a.device, cpu_b.device)
-with tf.device('/gpu:0'):
-    gpu_a = tf.random.normal([10000, 1000])
-    gpu_b = tf.random.normal([1000, 2000])
-    print(gpu_a.device, gpu_b.device)
-def cpu_run():
-    with tf.device('/cpu:0'):
-        c = tf.matmul(cpu_a, cpu_b)
-    return c
-def gpu_run():
-    with tf.device('/gpu:0'):
-        c = tf.matmul(gpu_a, gpu_b)
-    return c
-# warm up
-cpu_time = timeit.timeit(cpu_run, number=10)
-gpu_time = timeit.timeit(gpu_run, number=10)
-print('warmup:', cpu_time, gpu_time)
-
-cpu_time = timeit.timeit(cpu_run, number=10)
-gpu_time = timeit.timeit(gpu_run, number=10)
-print('run time:', cpu_time, gpu_time)
-
-
-from PIL import Image
-import glob
-import cv2
-import numpy as np
-import pandas as pd
-import datetime
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv2D, Flatten, Dropout, MaxPooling2D, ZeroPadding2D
-from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
-import os
-
-# import all the images in the file Left & Right
-
-image_list_left = []
-files = glob.glob(r"C:\..\Left\*.png")
-
-for filename in files:
-    print(filename)
-    image = cv2.imread(filename)
-    # image = tf.image.resize(image, [125, 125])
-    image_list_left.append(image)  # convert images into array
-    # print(filename)
-
-# import all the images in the file Left & Right
-image_list_right = []
-files = glob.glob(r"C:\..\Right\*.png")
-
-for filename in files:
-    print(filename)
-    image = cv2.imread(filename)
-    # image = tf.image.resize(image, [125, 125])
-    image_list_right.append(image)  # convert images into array
-    # print(filename)
-print('image_list shape:', np.array(image_list_left).shape)
-print('image_list shape:', np.array(image_list_right).shape)
-
-# convert list into array
-image_list_left = np.asarray(image_list_left)
-# convert list into array
-image_list_right = np.asarray(image_list_right)
-
-import matplotlib.pyplot as plt
-% matplotlib
-inline
-import numpy as np
-from PIL import Image
-
-X_left = image_list_left.reshape(965, 3, 224, 224).transpose(0, 2, 3, 1).astype("uint8")  # 48images with 125*125 pixels
-X_right = image_list_right.reshape(965, 3, 224, 224).transpose(0, 2, 3, 1).astype("uint8")
-
-# Labels
-df_left = pd.read_csv("Dual Left.csv")
-df_right = pd.read_csv("Dual right.csv")
-
-# Extract type from df table
-Label_left = df_left["Type"]
-Label_right = df_right["Type"]
-
-# Stack into array
-label_left = np.asarray(Label_left)
-label_right = np.asarray(Label_right)
-
-def one_hot_encode(vec, vals=2):
-    # to one-hot encode the 4- possible labesl
-    n = len(vec)
-    out = np.zeros((n, vals))
-    out[range(n), vec] = 1
-    return out
-
-class CifarHelper():
-    def __init__(self):
-        self.i = 0
-        # self.all_train_batches = [X]
-        self.images_left = None
-        self.labels_left = None
-
-        self.images_right = None
-        self.labels_right = None
-
-    def set_up_images(self):
-        print("Setting up images and labels")
-        self.images_left = np.vstack([X_left])
-        all_len_left = len(self.images_left)
-
-        self.images_left = self.images_left.reshape(all_len_left, 3, 224, 224).transpose(0, 2, 3, 1) / 255
-        self.labels_left = one_hot_encode(np.hstack([label_left]), 2)
-
-        self.images_right = np.vstack([X_right])
-        all_len_right = len(self.images_right)
-
-        self.images_right = self.images_right.reshape(all_len_right, 3, 224, 224).transpose(0, 2, 3, 1) / 255
-        self.labels_right = one_hot_encode(np.hstack([label_right]), 2)
-
-# before tensorflow run:
-ch = CifarHelper()
-ch.set_up_images()
-
-# Check the image and its label
-index = 466
-plt.imshow(image_list_left[index])
-print(label_left[index])
-
-# Check the image and its label
-index = 466
-plt.imshow(image_list_right[index])
-print(label_right[index])
-
-
-# Encoding data
-def vectorize_sequences(sequences, dimension=1000):
-    results = np.zeros((len(sequences), dimension))
-    for i, sequence in enumerate(sequences):
-        results[i, sequence] = 1.
-    return results
-
-
-def to_one_hot(labels_left, dimension=2):
-    results_left = np.zeros((len(labels_left), dimension))
-    for i, label_left in enumerate(labels_left):
-        results_left[i, label_left] = 1.
-    return results_left
-
-
-def to_one_hot(labels_right, dimension=2):
-    results_right = np.zeros((len(labels_right), dimension))
-    for i, label_right in enumerate(labels_right):
-        results_right[i, label_right] = 1.
-    return results_right
-
-
-one_hot_labels_left = to_one_hot(label_left)
-one_hot_labels_right = to_one_hot(label_right)
-
-import sklearn
-from sklearn.model_selection import KFold
-from sklearn.model_selection import RepeatedKFold
-from sklearn.model_selection import StratifiedKFold
-
-kf = StratifiedKFold(n_splits=10)
-kf.get_n_splits(X_left, label_left)
-kf.get_n_splits(X_right, label_right)
-
-for train_index, test_index in kf.split(X_left, y_left):
-    X_train_left, X_test_left = X_left[train_index], X_left[test_index]
-    X_train_right, X_test_right = X_right[train_index], X_right[test_index]
-
-    y_train_left, y_test_left = y_left[train_index], y_left[test_index]
-    y_train_right, y_test_right = y_right[train_index], y_right[test_index]
-
+# four-channel architecture construction
 
 def entry_flow(inputs):
-    x = Conv2D(32, 3, strides=2, padding='same')(inputs)
+    x = Conv2D(32, 3, strides=2, padding='same')(inputs) # channel-1 with kernel size of 3
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
@@ -237,11 +35,11 @@ def entry_flow(inputs):
         x = tensorflow.keras.layers.Add()([x, residual_x])
         previous_block_activation_x = x
 
-    y = Conv2D(32, 7, strides=2, padding='same')(inputs)
+    y = Conv2D(32, 7, strides=2, padding='same')(inputs)  # channel-2 with kernel size of 7
     y = BatchNormalization()(y)
     y = Activation('relu')(y)
 
-    y = Conv2D(64, 3, padding='same')(y)
+    y = Conv2D(64, 7, padding='same')(y)
     y = BatchNormalization()(y)
     y = Activation('relu')(y)
 
@@ -353,7 +151,7 @@ def exit_flow(x, y):
     y = SeparableConv2D(1024, 3, padding='same')(y)
     y = BatchNormalization()(y)
 
-    z = tf.math.add(x, y)
+    z = tf.math.add(x, y)  # fuse the two channels
     z = GlobalAveragePooling2D()(z)
     z = Dense(2, activation='linear')(z)
 
