@@ -35,36 +35,6 @@ tf.enable_eager_execution()
 import tensorflow as tf
 import timeit
 
-with tf.device('/cpu:0'):
-    cpu_a = tf.random.normal([10000, 1000])
-    cpu_b = tf.random.normal([1000, 2000])
-    print(cpu_a.device, cpu_b.device)
-with tf.device('/gpu:0'):
-    gpu_a = tf.random.normal([10000, 1000])
-    gpu_b = tf.random.normal([1000, 2000])
-    print(gpu_a.device, gpu_b.device)
-
-
-def cpu_run():
-    with tf.device('/cpu:0'):
-        c = tf.matmul(cpu_a, cpu_b)
-    return c
-
-
-def gpu_run():
-    with tf.device('/gpu:0'):
-        c = tf.matmul(gpu_a, gpu_b)
-    return c
-
-
-# warm up
-cpu_time = timeit.timeit(cpu_run, number=10)
-gpu_time = timeit.timeit(gpu_run, number=10)
-print('warmup:', cpu_time, gpu_time)
-cpu_time = timeit.timeit(cpu_run, number=10)
-gpu_time = timeit.timeit(gpu_run, number=10)
-print('run time:', cpu_time, gpu_time)
-
 from PIL import Image
 import glob
 import cv2
@@ -115,10 +85,10 @@ inline
 import numpy as np
 from PIL import Image
 
-X_left = image_list_left.reshape(965, 3, 224, 224).transpose(0, 2, 3, 1).astype("uint8")  # 48images with 125*125 pixels
+X_left = image_list_left.reshape(965, 3, 224, 224).transpose(0, 2, 3, 1).astype("uint8")  # or use 2D images without reshape based on image formats
 X_right = image_list_right.reshape(965, 3, 224, 224).transpose(0, 2, 3, 1).astype("uint8")
 
-# Labels
+# Read labels
 df_left = pd.read_csv("Dual Left.csv")
 df_right = pd.read_csv("Dual right.csv")
 
@@ -139,7 +109,7 @@ def one_hot_encode(vec, vals=2):
     out[range(n), vec] = 1
     return out
 
-
+# Match labels with images
 class CifarHelper():
     def __init__(self):
         self.i = 0
@@ -176,12 +146,6 @@ index = 466
 plt.imshow(image_list_left[index])
 print(label_left[index])
 
-# Check the image and its label
-index = 466
-plt.imshow(image_list_right[index])
-print(label_right[index])
-
-
 # Encoding data
 def vectorize_sequences(sequences, dimension=1000):
     results = np.zeros((len(sequences), dimension))
@@ -189,7 +153,7 @@ def vectorize_sequences(sequences, dimension=1000):
         results[i, sequence] = 1.
     return results
 
-
+# Make labels as one-hot format
 def to_one_hot(labels_left, dimension=2):
     results_left = np.zeros((len(labels_left), dimension))
     for i, label_left in enumerate(labels_left):
@@ -202,7 +166,6 @@ def to_one_hot(labels_right, dimension=2):
     for i, label_right in enumerate(labels_right):
         results_right[i, label_right] = 1.
     return results_right
-
 
 one_hot_labels_left = to_one_hot(label_left)
 one_hot_labels_right = to_one_hot(label_right)
@@ -225,8 +188,9 @@ for train_index, test_index in kf.split(X_left, y_left):
     y_train_right, y_test_right = y_right[train_index], y_right[test_index]
 
 
+# Xception model construction
 def entry_flow(inputs):
-    x = Conv2D(32, 7, strides=2, padding='same')(inputs)
+    x = Conv2D(32, 3, strides=2, padding='same')(inputs)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
@@ -315,7 +279,7 @@ CV_summary = []
 t_CV = time.perf_counter()
 
 fold = 0
-Final_CM = np.mat(np.zeros((4, 4)))
+Final_CM = np.mat(np.zeros((4, 4)))  # define a confusion matrix size for the output
 Final_GT = []
 Final_pred = []
 
@@ -372,7 +336,7 @@ for i in kf.split(X_left, y_left):
     CM_summary = np.mat(np.zeros((4, 4)))
     Epoch_summary = []
 
-    epochs = 10  # 35
+    epochs = 30  # fine-tuning is required
     epsilon = 0
 
     for epoch in range(1, epochs + 1):
@@ -398,10 +362,7 @@ for i in kf.split(X_left, y_left):
 
             grads_left = tape.gradient(loss_left, model_left.trainable_variables)
             optimizer.apply_gradients(zip(grads_left, model_left.trainable_variables))
-
-        #     with CV_summary_writer.as_default():
-        #         tf.summary.scalar('train-CrossEntropy', float(loss), step=epoch)
-        #         tf.summary.scalar('train-Accuracy', float(train_accuracy.result() * 100), step=epoch)
+            
         print('-----------------------------------------------------------------')
         print('Left Training time: ', time.perf_counter() - t1_left)
 
@@ -451,9 +412,6 @@ for i in kf.split(X_left, y_left):
             grads_right = tape.gradient(loss_right, model_right.trainable_variables)
             optimizer.apply_gradients(zip(grads_right, model_right.trainable_variables))
 
-        #     with CV_summary_writer.as_default():
-        #         tf.summary.scalar('train-CrossEntropy', float(loss), step=epoch)
-        #         tf.summary.scalar('train-Accuracy', float(train_accuracy.result() * 100), step=epoch)
         print('-----------------------------------------------------------------')
         print('Right Training time: ', time.perf_counter() - t1_right)
 
@@ -483,14 +441,16 @@ for i in kf.split(X_left, y_left):
 
         ground_truth = []
         prediction = []
+        
+        # define the fused outputs into 4x4 matrix
         for j in range(len(test_pred_right)):
-            if test_GT_left[j].numpy() == 0 and test_GT_right[j].numpy() == 0:
+            if test_GT_left[j].numpy() == 0 and test_GT_right[j].numpy() == 0:  # both sides normal
                 ground_truth.append(0)
-            elif test_GT_left[j].numpy() == 1 and test_GT_right[j].numpy() == 0:
+            elif test_GT_left[j].numpy() == 1 and test_GT_right[j].numpy() == 0:  # left-side malignant and right-side normal
                 ground_truth.append(1)
-            elif test_GT_left[j].numpy() == 0 and test_GT_right[j].numpy() == 1:
+            elif test_GT_left[j].numpy() == 0 and test_GT_right[j].numpy() == 1:  # left-side normal and right-side malignant
                 ground_truth.append(2)
-            elif test_GT_left[j].numpy() == 1 and test_GT_right[j].numpy() == 1:
+            elif test_GT_left[j].numpy() == 1 and test_GT_right[j].numpy() == 1:  # both sides malignant
                 ground_truth.append(3)
 
             if test_pred_left[j].numpy() == 0 and test_pred_right[j].numpy() == 0:
@@ -525,11 +485,6 @@ for i in kf.split(X_left, y_left):
     Final_CM += Best_CM
     Final_GT.extend(Best_GT)
     Final_pred.extend(Best_pred)
-
-    #     print("GT:",len(ground_truth),type(ground_truth), ground_truth)
-    #     print("pred:", len(prediction), type(prediction), prediction)
-    #     print("F_GT:", len(Final_GT), type(Final_GT), Final_GT)
-    #     print("F_pre:", len(Final_pred), type(Final_pred), Final_pred)
 
     print("---------------------------------------------------------------------")
     print("Fold Summary:")
