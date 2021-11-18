@@ -1,4 +1,4 @@
-
+# import packages
 import cv2
 import os
 from tkinter import *
@@ -8,12 +8,12 @@ import xlrd
 from xlutils.copy import copy
 import numpy as np
 
-
+# open the image
 def cv_imread(file_path):
     cv_img = cv2.imdecode(np.fromfile(file_path, dtype = np.uint8), -1)
     return cv_img
 
-# locate the mouse
+# locate the mouse over the image
 def on_EVENT_LBUTTONDOWN(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         xy = "%d,%d" % (x, y)
@@ -26,7 +26,7 @@ def on_EVENT_LBUTTONDOWN(event, x, y, flags, param):
         print(x, y)
 
 
-# extract the numbers from the window
+# extract the location numbers of the mouse from the window
 def getInput(title, message):
     def return_callback(event):
         print('quit...')
@@ -58,7 +58,7 @@ def getInput(title, message):
     root.destroy()
     return str
 
-
+# define the style for the excel sheet for saving the labels
 def set_style(name, height, bold=False):
     style = xlwt.XFStyle()  
 
@@ -80,7 +80,7 @@ def create_excel_xls(path, sheet_name, attributes):
         sheet.write(0, i, attributes[i], set_style('Times New Roman', 220, True))
     workbook.save(path)  # save the workbook
 
-# add in the values in the excel file
+# add in the image information in the excel file
 def write_excel_xls_append(path, value):
     index = len(value)  
     workbook = xlrd.open_workbook(path)  
@@ -100,11 +100,11 @@ if __name__ == '__main__':
     height = 600
 
     # save the image path
-    input_dir = r'C:\Users\Amy\Desktop\CT\201 - 301'
+    input_dir = r'C:\Users\...\CT\...' # location of the images
     
-    output_dir_LR = r'C:\Users\Amy\Desktop\Cropped CT\Left and Right'
+    output_dir_LR = r'C:\...\Cropped CT\Left and Right' 
    
-    output_dir_W = r'C:\Users\Amy\Desktop\Cropped CT\Whole'
+    output_dir_W = r'C:\Users\...\Cropped CT\Whole'
 
 
     if not os.path.exists(output_dir_LR):  
@@ -113,8 +113,8 @@ if __name__ == '__main__':
     if not os.path.exists(output_dir_W):  
         os.makedirs(output_dir_W)
 
-    # the fila path for the labels
-    Labels = r'C:\Users\Amy\Desktop\CT Label'
+    # the file path for the labels
+    Labels = r'C:\...\CT Label'
     
     Leftdata_labels = Labels + r'/Left_labels.xls'
     Rightdata_labels = Labels + r'/Right_labels.xls'
