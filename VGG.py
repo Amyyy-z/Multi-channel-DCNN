@@ -8,6 +8,8 @@
 import tensorflow as tf
 from tensorflow.keras import layers, models, Model, Sequential, regularizers
 
+# VGG models construction
+
 cfgs = {
     'vgg8': [64,'M',128,'M',256,'M',512,'M',512,'M'],
     'vgg11': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
