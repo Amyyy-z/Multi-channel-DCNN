@@ -16,7 +16,7 @@ If you are working with CT images, CT segmentation is suggested to reach better 
 4. Images will be stored in a new file, and labels will be stored in an Excel sheet.
 
 ### Apply SIDC, DIDC, and Four-channel architectures
-**Computational environment**: Tensorflow 2.1.0, Python 3.2.1
+**Computational environment**: Tensorflow 2.1.0, Python 3.7
 
 **Implementation procedures**:
 1. Prepare left-side and right-side images in seperate folders
