@@ -39,6 +39,7 @@ Besides multi-channel CNN for binary classification, this repository also contai
 The implementation procedures were the same as the above steps.
 
 If you are looking for the multi-class dataset, please download at [Multi-class Dataset.zip](https://github.com/Amyyy-z/Multi-channel-DCNN/blob/Multi-channel-CNN/Multi-class%20Dataset.zip).
+
 The step-by-step implementation procedures can be found through [Multi-channel Multi-class Classification.py](https://github.com/Amyyy-z/Multi-channel-DCNN/blob/Multi-channel-CNN/Multi-channel%20Multi-class%20Classification.py)
 
 
