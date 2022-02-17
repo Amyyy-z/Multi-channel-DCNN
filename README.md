@@ -32,6 +32,16 @@ If you are working with CT images, CT segmentation is suggested to reach better 
 8. Train and test the model through stratified CV
 9. Print out the confusion matrix to evaluate the model performance
 
+--------------------------------------------------
+
+# Multi-channel Multi-class CNN implementation
+Besides multi-channel CNN for binary classification, this repository also contains the work for multi-channel multi-class classification tasks.
+The implementation procedures were the same as the above steps.
+
+If you are looking for the multi-class dataset, please download at [Multi-class Dataset.zip](https://github.com/Amyyy-z/Multi-channel-DCNN/blob/Multi-channel-CNN/Multi-class%20Dataset.zip).
+The step-by-step implementation procedures can be found through [Multi-channel Multi-class Classification.py](https://github.com/Amyyy-z/Multi-channel-DCNN/blob/Multi-channel-CNN/Multi-channel%20Multi-class%20Classification.py)
+
+
 ### Contact
 For any other inquiries, please email: amy.zhang@monash.ed
 
