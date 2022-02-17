@@ -44,7 +44,7 @@ The step-by-step implementation procedures can be found through [Multi-channel M
 
 
 ### Contact
-For any other inquiries, please email: amy.zhang@monash.ed
+For any other inquiries, please email: xinyu.zhang@monash.ed
 
 --------------------------------------------------------------------------------------------------------
 
